@@ -57,7 +57,7 @@ class Configuration():
     
             # The command to be executed when the WireGuard config has changed
             # on_change_command = 
-            on_change_command = "sudo --non-interactive wg-quick down {wg_configfile}; sudo --non-interactive wg-quick up {wg_configfile}"
+            on_change_command = "sudo systemctl reload wg-quick@{self.wg_interface}"
     
             # The interface the web server shall bind to
             # socket_host = 0.0.0.0

@@ -378,7 +378,7 @@ def setup_environment():
             if qu.input_yes_no(f'Would you like to allow the system user of the web frontend to reload WireGuard on config changes (using sudo)? [Yes]:'):
                 sudoers_content = textwrap.dedent(f'''\
                     {cfg.user}  ALL=(root) NOPASSWD: /etc/init.d/wgfrontend_interface start, /etc/init.d/wgfrontend_interface stop, /etc/init.d/wgfrontend_interface restart
-                    {cfg.user}  ALL=(root) NOPASSWD: /usr/bin/wg-quick down {cfg.wg_configfile}, /usr/bin/wg-quick up {cfg.wg_configfile}
+                    {cfg.user}  ALL=(root) NOPASSWD: /usr/bin/systemctl reload wg-quick@{cfg.wg_interface}
                 ''')    
                 if os.path.isdir('/etc/sudoers.d'):
                     with open('/etc/sudoers.d/wgfrontend', 'w') as sudoers_file:

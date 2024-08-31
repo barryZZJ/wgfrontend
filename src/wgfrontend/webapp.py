@@ -17,6 +17,7 @@ from . import wgcfg
 
 class WebApp():
     PREFIX = '/redirectlocal/wireguard'  # set to '' to disable prefix
+    ALLOWED_IPS = ['127.0.0.1']  # currently, only allow local access made by flask server redirection
     def __init__(self, cfg):
         """Instance initialization"""
         self.cfg = cfg
@@ -85,6 +86,9 @@ class WebApp():
 
     def login_screen(self, from_page='..', username='', error_msg='', **kwargs):
         """Shows a login form"""
+        print(f'{cherrypy.request.remote.ip=}')
+        if cherrypy.request.remote.ip not in self.ALLOWED_IPS:
+            raise cherrypy.HTTPError(403, 'Access denied')
         tmpl = self.jinja_env.get_template('login.html')
         return tmpl.render(from_page=from_page, username=username, error_msg=error_msg, prefix=self.PREFIX).encode('utf-8')
 
@@ -121,6 +125,7 @@ def run_webapp(cfg):
     # Define socket parameters
     cherrypy.config.update({'server.socket_host': cfg.socket_host,
                             'server.socket_port': cfg.socket_port,
+                            'request.show_tracebacks': False,
                            })
     # Select environment
     cherrypy.config.update({'staging':
