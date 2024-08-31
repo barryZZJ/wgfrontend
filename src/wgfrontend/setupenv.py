@@ -360,6 +360,10 @@ def setup_environment():
             print('  Config file written. Ok.')
             eh = exechelper.ExecHelper()
             if qu.input_yes_no(f'Would you like to enable IP Forwarding so that this device can act as a router? [Yes]:', expert_question=True):
+                wc.add_attr(None, 'PostUp', f'iptables -A FORWARD -i {cfg.wg_interface} -j ACCEPT; iptables -A FORWARD -o {cfg.wg_interface} -j ACCEPT; iptables -t nat -A POSTROUTING -o {get_primary_interface()} -j MASQUERADE',
+                            append_as_line=True)
+                wc.add_attr(None, 'PostDown', f'iptables -D FORWARD -i {cfg.wg_interface} -j ACCEPT; iptables -D FORWARD -o {cfg.wg_interface} -j ACCEPT; iptables -t nat -D POSTROUTING -o {get_primary_interface()} -j MASQUERADE',
+                            append_as_line=True)
                 eh.execute('sysctl -w net.ipv4.ip_forward=1', suppressoutput=True, suppresserrors=False)
                 eh.execute('sysctl -w net.ipv6.conf.all.forwarding=1', suppressoutput=True, suppresserrors=False)
                 ipforwarding_content = textwrap.dedent(f'''\

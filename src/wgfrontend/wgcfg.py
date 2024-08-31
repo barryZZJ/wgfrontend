@@ -41,7 +41,7 @@ class WGCfg():
             if item.startswith('# PrivateKey = '):
                 result['PrivateKey'] = item[15:]
         result['PublicKey'] = peer
-        result['PresharedKey'] = peerdata['PresharedKey']
+        # result['PresharedKey'] = peerdata['PresharedKey']
         address = peerdata['AllowedIPs'].partition(',')[0] # get first allowed ip range
         address = address.partition('/')[0] + '/' + self.get_interface()['Address'].partition('/')[2] # take prefix length from interface address
         result['Address'] = address
@@ -60,7 +60,7 @@ class WGCfg():
         return { peer: self.get_peer(peer) for peer in self.wc.peers.keys() }
 
     def get_peer_byid(self, id):
-        """Get data WireGuard peer with the given id"""
+        """Get data WireGuard peer with the given id. peer is public key string"""
         try:
             peer = next(peer for peer, peerdata in self.get_peers().items() if peerdata['Id'] == id)
         except StopIteration:
@@ -82,7 +82,7 @@ class WGCfg():
         config = textwrap.dedent(f'''\
             # {peerdata['Description']}
             [Interface]
-            ListenPort = 51820
+            # ListenPort = 51820
             PrivateKey = {peerdata['PrivateKey']}
             # PublicKey = {public_key}
             Address = {peerdata['Address']}
@@ -90,7 +90,7 @@ class WGCfg():
             [Peer]
             Endpoint = {endpoint}
             PublicKey = {public_key_server}
-            PresharedKey = {peerdata['PresharedKey']}
+            # PresharedKey = peerdata['PresharedKey']
             AllowedIPs = {allowed_ips}
             PersistentKeepalive = 25
         ''')
@@ -104,8 +104,8 @@ class WGCfg():
         peer = wgexec.get_publickey(private_key)
         self.wc.add_peer(peer, '# ' + description)
         comment = '# PrivateKey = ' + private_key
-        self.wc.add_attr(peer, 'PresharedKey', wgexec.generate_presharedkey(), comment, append_as_line=True)
-        self.wc.add_attr(peer, 'AllowedIPs', ip + '/32')
+        # self.wc.add_attr(peer, 'PresharedKey', wgexec.generate_presharedkey())
+        self.wc.add_attr(peer, 'AllowedIPs', ip + '/32', comment)
         self.wc.add_attr(peer, 'PersistentKeepalive', 25)
         self.wc.write_file()
         self.write_qrcode(peer)

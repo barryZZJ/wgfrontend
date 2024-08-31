@@ -16,7 +16,7 @@ from . import wgcfg
 
 
 class WebApp():
-
+    PREFIX = '/redirectlocal/wireguard'  # set to '' to disable prefix
     def __init__(self, cfg):
         """Instance initialization"""
         self.cfg = cfg
@@ -30,10 +30,12 @@ class WebApp():
             self.wg.delete_peer(peer)
         peers = self.wg.get_peers()
         tmpl = self.jinja_env.get_template('index.html')
-        return tmpl.render(sessiondata=cherrypy.session, peers=peers)
+        return tmpl.render(sessiondata=cherrypy.session, peers=peers, prefix=self.PREFIX)
 
     @cherrypy.expose
     def config(self, action=None, id=None, description=None):
+        peer = None
+        config = None
         peerdata = None
         if (action == 'save') and id:
             peer, peerdata = self.wg.get_peer_byid(id)
@@ -43,8 +45,10 @@ class WebApp():
             peerdata = self.wg.get_peer(peer)
         if not peerdata:
             peer, peerdata = self.wg.get_peer_byid(id)
+        if peer:
+            config, _ = self.wg.get_peerconfig(peer)
         tmpl = self.jinja_env.get_template('config.html')
-        return tmpl.render(sessiondata=cherrypy.session, peerdata=peerdata)
+        return tmpl.render(sessiondata=cherrypy.session, peerdata=peerdata, config=config, prefix=self.PREFIX)
 
     @cherrypy.expose
     def edit(self, action='edit', id=None, description=None):
@@ -60,7 +64,7 @@ class WebApp():
             else: # save changes
                 raise ValueError()
         tmpl = self.jinja_env.get_template('edit.html')
-        return tmpl.render(sessiondata=cherrypy.session, peerdata=peerdata)
+        return tmpl.render(sessiondata=cherrypy.session, peerdata=peerdata, prefix=self.PREFIX)
 
     @cherrypy.expose
     def download(self, id):
@@ -82,7 +86,7 @@ class WebApp():
     def login_screen(self, from_page='..', username='', error_msg='', **kwargs):
         """Shows a login form"""
         tmpl = self.jinja_env.get_template('login.html')
-        return tmpl.render(from_page=from_page, username=username, error_msg=error_msg).encode('utf-8')
+        return tmpl.render(from_page=from_page, username=username, error_msg=error_msg, prefix=self.PREFIX).encode('utf-8')
 
     @cherrypy.expose
     def logout(self):
@@ -91,7 +95,7 @@ class WebApp():
         cherrypy.response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
         cherrypy.response.headers['Pragma'] = 'no-cache'
         cherrypy.response.headers['Expires'] = '0'
-        raise cherrypy.HTTPRedirect('/', 302)        
+        raise cherrypy.HTTPRedirect(self.PREFIX + '/', 302)
         return '"{0}" has been logged out'.format(username)
 
     def on_change_func(self):
@@ -157,6 +161,7 @@ def run_webapp(cfg):
     }
     # Start CherryPy
     cherrypy.tree.mount(app, config=app_conf)
+    cherrypy.tree.mount(app, WebApp.PREFIX, config=app_conf)  # mount on prefix so that redirecting target with prefix can be normally accessed
     if setupenv.is_root():
         # Drop privileges
         uid, gid = setupenv.get_uid_gid(cfg.user, cfg.user)

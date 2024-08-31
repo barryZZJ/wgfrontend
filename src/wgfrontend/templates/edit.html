@@ -4,7 +4,7 @@
       <div class='form'>
         <form method="get" action="..">
           <div class="buttonrow">
-            <button class="button buttonhighlight" type="submit" name="action" value="list">Return to List</button>
+            <button class="button buttonhighlight" type="submit" name="action" value="list" formaction=".">Return to List</button>
           </div>
           <div class="table">
             <div class="table-row">
@@ -16,9 +16,9 @@
               <div class="table-cell twobuttoncell bordertop2">
                 <button class="button" type="submit" name="action" value="save" formaction="config">{% if peerdata['Id'] %}Save Changes{% else %}Save{%endif %}</button>
                 {%- if peerdata['Id'] %}
-                <button class="button" type="submit" name="action" value="delete" onclick="return confirm('Do you really want to delete this client?')">Delete Client</button>                
+                <button class="button" type="submit" name="action" value="delete" onclick="return confirm('Do you really want to delete this client?')" formaction=".">Delete Client</button>
                 {%- else %}
-                <button class="button" type="submit" name="action" value="list")">Cancel</button>
+                <button class="button" type="submit" name="action" value="list" formaction=".">Cancel</button>
                 {%- endif %}
               </div>
             </div>

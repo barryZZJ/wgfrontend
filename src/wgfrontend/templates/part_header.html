@@ -1,8 +1,8 @@
   <header>
-    <h2><a href="/"><img src="static/logo.svg" alt="Towalink logo"><span>Towalink WireGuard Frontend</span></a></h2>
+    <h2><a href="{{ prefix }}/"><img src="{{ prefix }}/static/logo.svg" alt="Towalink logo"><span>Towalink WireGuard Frontend</span></a></h2>
     <div class="user">
       <p>{% if sessiondata['username'] %}{{ sessiondata['username'] }}{% else %}not logged in{%endif %}</p>
-      <form action="/logout">
+      <form action="{{ prefix }}/logout">
         <input class="button" type="submit" value="Logout" />
       </form>
     </div>
